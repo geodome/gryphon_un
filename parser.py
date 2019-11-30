@@ -49,17 +49,18 @@ class Parser:
         current = self.root 
         ids = []
         while len(tokens) > 0:
-            if curr_t.isdigit():
-                current = current.next("<id>")
-                ids.append(int(curr_t)）
-            else:
+            try:
                 current = current.next(curr_t)
+            except ParserError:
+                try:
+                    current = current.next("<str>")
+                except ParserError:
+                    raise ParserError
+                else:
+                    ids.append(curr_t)
         if len(ids) > 0:
             msg1, msg2 = current.exec(*a)
         else:
             msg1, msg2 = current.exec()
         return msg1, msg2
                     
-def GetChairParser(chairperson):
-    p = Parser()
-    p.addCommand("open session", chairperson.session)

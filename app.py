@@ -2,6 +2,8 @@
 import slack
 from config import token
 from parser import Parser
+from chairperson import chairperson
+from memberstate import memberstate
 
 def GetChairParser(chairperson):
     p = Parser()

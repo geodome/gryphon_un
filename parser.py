@@ -8,58 +8,66 @@ class Node:
         self._node = {}
         self.exec = None 
     
-    def addFn(self, fn:function):
+    def addFn(self, fn):
         self.exec = fn
 
     def addNode(self, token:str):
         if not token.isdigit():
-            self._node[cmd] = Node(token)
-            return self._node[cmd]
+            self._node[token] = Node(token)
+            return self._node[token]
 
     def next(self, token):
         try:
-            return self._node[cmd]
+            return self._node[token]
         except KeyError:
             raise ParserError("Syntax Error")
 
 class Parser:
     
     def __init__(self):
-        self.root = Node(None, None)
+        self.root = Node(None)
     
-    def addCommand(self, cmd:str, fn: function):
+    def addCommand(self, cmd:str, fn):
         tokens = cmd.split()
         current = self.root 
         while len(tokens) > 0:
             curr_t = tokens.pop(0)
-            if curr_t.isdigit():
-                try:
-                    current = current.next("<id>")
-                except:
-                    current = current.addNode("<id>")
-            else:
-                try:
-                    current = current.next(curr_t)
-                except:
-                    current = current.addNode(curr_t)
+            try:
+                current = current.next(curr_t)
+            except:
+                current = current.addNode(curr_t)
         current.addFn(fn)
 
     def exec(self, cmd:str):
         tokens = cmd.split()
         current = self.root 
-        ids = []
+        args = []
+        isGreedy = False
+        glob = []
         while len(tokens) > 0:
-            try:
-                current = current.next(curr_t)
-            except ParserError:
+            curr_t = tokens.pop(0)
+            if isGreedy:
+                glob.append(curr_t)
+            else:
                 try:
-                    current = current.next("<str>")
+                    current = current.next(curr_t)
                 except ParserError:
-                    raise ParserError
-                else:
-                    ids.append(curr_t)
-        if len(ids) > 0:
-            msg1, msg2 = current.exec(*a)
+                    try:
+                        current = current.next("<*>")
+                    except ParserError:
+                        try:
+                            current = current.next("<str>")
+                        except ParserError:
+                            raise ParserError
+                        else:
+                            args.append(curr_t)
+                    else:
+                        isGreedy = True
+                        glob.append(curr_t)
+        if isGreedy:
+            args.append(" ".join(glob))
+        if len(args) > 0:
+            msg1, msg2 = current.exec(*args)
         else:
             msg1, msg2 = current.exec()
         return msg1, msg2

@@ -10,6 +10,10 @@ class member:
         self.yes = 0
         self.no = 0
         self.total_motion = 0
+        self.session = None
+        
+    def addSession(self, s):
+        self.session = s
         
 
     def present(self):
@@ -68,7 +72,7 @@ class member:
 
 
     def view_status(self,country):
-        global session 
+        session = self.session 
 
         if session[members['country']] == True:
             return self.role
@@ -194,11 +198,11 @@ class member:
         return (Motion + " is submitted by " + self.country, "Motion submitted")
 
     def main_agenda(self):
-        global session 
+        session = self.session
         return session['agenda']
 
     def sub_agenda(self):
-        global session 
+        session = self.session
         return session['sub_agenda']
 
 

@@ -4,7 +4,7 @@ from config import token
 from parser import Parser
 
 class ChairPerson:
-    def __init__(self, userid, session):
+    def __init__(self, userid):
         pass
 
     def isUser(self, user):
@@ -24,8 +24,8 @@ def GetChairParser(chairperson):
     p.addCommand("open floor", chairperson.open_floor)
     p.addCommand("close floor", chairperson.close_floor)
     p.addCommand("add member <str> <str>", chairperson.add_member)
-    p.addCommand("del motion <int>", chairperson.del_motion)
-    p.addCommand("start timer <int> <int>", chairperson.start_timer)
+    p.addCommand("del motion <str>", chairperson.del_motion)
+    p.addCommand("start timer <str> <str>", chairperson.start_timer)
     p.addCommand("set agenda <*>", chairperson.set_agenda)
     p.addCommand("close agenda", chairperson.close_agenda)
     return p 
@@ -52,8 +52,11 @@ def GetMemberStateParser(member):
     return p
 
 def NewSession(chair):
+    chairperson = ChairPerson(chair)
+    chairparser = GetChairParser(chairperson)
     session = {}
-    session["chairperson"] = ChairPerson(chair, session)
+    session["chairperson"] = ChairPerson(chair)
+    session["parser"] = []
     session["memberstates"] = {"chairperon": MemberState(chair, "chair")}
     session["agenda"] = ""
     return session
@@ -65,17 +68,42 @@ def isMemberState(user):
 @slack.RTMClient.run_on(event='message')
 def chairperson_commands(**payload):
     data = payload['data']
-    client = payload['rtm_client']
+    web_client = payload['web_client']
     if session["chairperson"].isUser(data['user']):
         command = data.get('text', []).split()
-        p = Parser()
+        p = GetChairParser(session["chairperson"])
+        msg1, msg2 = p.exec(command)
+        channel_id = data['channel']
+        thread_ts = data['ts']
+        web_client.chat_postMessage(
+            channel=channel_id,
+            text=msg1,
+            thread_ts=thread_ts
+        )        
+        web_client.chat_postMessage(
+            channel="#general",
+            text=msg2,
+        )        
 
 @slack.RTMClient.run_on(event='message')
 def memberstate_commands(**payload):
-    data = payload["data"]
-    client = payload['rtm_client']
-    if isMemberState(session["user"]):
-        pass
+    data = payload['data']
+    web_client = payload['web_client']
+    if isMemberState(data['user']):
+        command = data.get('text', []).split()
+        p = GetMemberStateParser(data["user"])
+        msg1, msg2 = p.exec(command)
+        channel_id = data['channel']
+        thread_ts = data['ts']
+        web_client.chat_postMessage(
+            channel=channel_id,
+            text=msg1,
+            thread_ts=thread_ts
+        )        
+        web_client.chat_postMessage(
+            channel="#general",
+            text=msg2,
+        )        
 
 session = NewSession(chair = "Donaldson Tan")
 rtm_client = slack.RTMClient(token=token)

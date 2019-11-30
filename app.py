@@ -16,7 +16,7 @@ def GetChairParser(chairperson):
     p.addCommand("close floor", chairperson.close_floor)
     p.addCommand("add member <str> <str>", chairperson.add_member)
     p.addCommand("del motion <str>", chairperson.del_motion)
-    p.addCommand("start timer <str> <str>", chairperson.start_timer)
+    p.addCommand("start timer <str>", chairperson.start_timer)
     p.addCommand("set agenda <*>", chairperson.set_agenda)
     p.addCommand("close agenda", chairperson.close_agenda)
     return p 

@@ -3,17 +3,6 @@ import slack
 from config import token
 from parser import Parser
 
-class ChairPerson:
-    def __init__(self, userid):
-        pass
-
-    def isUser(self, user):
-        return True
-
-class MemberState:
-    def __init__(self, userid, country):
-        pass
-
 def GetChairParser(chairperson):
     p = Parser()
     p.addCommand("open session", chairperson.open_session)
